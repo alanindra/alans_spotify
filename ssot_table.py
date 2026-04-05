@@ -1,6 +1,8 @@
 import pandas as pd
 import logging
 import json
+from queries import query
+from pandasql import sqldf
 from config import path, file_names, metadata_obejct
 
 logger = logging.getLogger(__name__)
@@ -11,6 +13,9 @@ class SsotTable:
         self.file_names = file_names
         self.metadata_obejct = metadata_obejct
         self.df = df
+
+    def psql(self, query, env):
+        return sqldf(query, env)
     
     def create_stream_table(self):
         stream_history_dir = self.path["stream_history"]
@@ -23,16 +28,17 @@ class SsotTable:
             logger.error("Path is not a directory: %s", stream_history_dir)
             raise NotADirectoryError(f"Path is not a directory: {stream_history_dir}")
         
-        files = list(stream_history_dir.glob("StreamingHistory_music*"))
+        files = list(stream_history_dir.glob(self.file_names["stream"]))
 
         if not files:
             logger.error(
-                "No matching files found in %s for 'StreamingHistory_music*'",
-                stream_history_dir
+                "No matching files found in %s for '%s'",
+                stream_history_dir,
+                self.file_names["stream"]
             )
             raise FileNotFoundError(
                 f"No matching files found in {stream_history_dir} "
-                f"for 'StreamingHistory_music*'"
+                f"for '{self.file_names["stream"]}"
             )
 
         stream_table = []
@@ -44,7 +50,9 @@ class SsotTable:
                 logger.error("Failed to read JSON file: %s", file)
                 raise ValueError(f"Failed to read JSON file: {file}") from e
 
-        return pd.concat(stream_table, ignore_index=True)
+        stream_table = pd.concat(stream_table, ignore_index=True)
+
+        return self.psql(self.query["stream_table"], {"stream_table":stream_table})
     
     def read_metadata_file(self):
         metadata_dir = self.path["metadata"]
@@ -116,7 +124,9 @@ class SsotTable:
                 logger.error("Failed to read JSON file: %s", file)
                 raise ValueError(f"Failed to read JSON file: {file}") from e
 
-        return pd.concat(extended_stream_table, ignore_index=True)
+        extended_stream_table = pd.concat(extended_stream_table, ignore_index=True)
+
+        return self.psql(self.query["extended_stream_table"], {"extended_stream_table":extended_stream_table})
 
     # def create_ssot_table(self, df):
         """
