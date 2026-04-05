@@ -2,9 +2,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
-UTC_TIMEZONE = "+7 hours"
+utc_timezone = "+7 hours"
 
-DF_TABLE_NAME_MAPPING = {
+df_table_name_mapping = {
     "extended_audio_stream": "extended_audio_stream_table",
     "extended_video_stream": "extended_video_stream_table",
     "extended_stream": "extended_stream_table",
@@ -14,7 +14,7 @@ DF_TABLE_NAME_MAPPING = {
     "artist": "artist_table",
 }
 
-PATH = {
+path = {
     "input": BASE_DIR / "input",
     "metadata": BASE_DIR / "input" / "metadata",
     "stream_history": BASE_DIR / "input" / "streaming_history",
