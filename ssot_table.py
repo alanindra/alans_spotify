@@ -83,7 +83,40 @@ class SsotTable:
         df = self.read_metadata_file()
         return pd.json_normalize(df[self.metadata_obejct["artists"]])
 
-    # def create_extended_streaming_history_table(self, df):
+    def create_extended_stream_table(self):
+        extended_stream_history_dir = self.path["extended_stream_history"]
+
+        if not extended_stream_history_dir.exists():
+            logger.error("Directory not found: %s", extended_stream_history_dir)
+            raise FileNotFoundError(f"Directory not found: {extended_stream_history_dir}")
+
+        if not extended_stream_history_dir.is_dir():
+            logger.error("Path is not a directory: %s", extended_stream_history_dir)
+            raise NotADirectoryError(f"Path is not a directory: {extended_stream_history_dir}")
+        
+        files = list(extended_stream_history_dir.glob(self.file_names["extended_stream"]))
+
+        if not files:
+            logger.error(
+                "No matching files found in %s for '%s'",
+                extended_stream_history_dir,
+                self.file_names["extended_stream"]
+            )
+            raise FileNotFoundError(
+                f"No matching files found in {extended_stream_history_dir} "
+                f"for '{self.file_names["extended_stream"]}"
+            )
+
+        extended_stream_table = []
+
+        for file in files:
+            try:
+                extended_stream_table.append(pd.read_json(file))
+            except ValueError as e:
+                logger.error("Failed to read JSON file: %s", file)
+                raise ValueError(f"Failed to read JSON file: {file}") from e
+
+        return pd.concat(extended_stream_table, ignore_index=True)
 
     # def enrich_audio_features(self, df):
 
