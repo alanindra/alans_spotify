@@ -1,12 +1,15 @@
 import pandas as pd
 import logging
-from config import path
+import json
+from config import path, file_names, metadata_obejct
 
 logger = logging.getLogger(__name__)
 
 class SsotTable:
     def __init__(self, df=None):
         self.path = path
+        self.file_names = file_names
+        self.metadata_obejct = metadata_obejct
         self.df = df
     
     def create_stream_table(self):
@@ -42,12 +45,43 @@ class SsotTable:
                 raise ValueError(f"Failed to read JSON file: {file}") from e
 
         return pd.concat(stream_table, ignore_index=True)
+    
+    def read_metadata_file(self):
+        metadata_dir = self.path["metadata"]
+        metadata_file = metadata_dir / self.file_names["metadata"]
 
-    # def create_album_table(self, df):
+        if not metadata_dir.exists():
+            logger.error("Directory not found: %s", metadata_dir)
+            raise FileNotFoundError(f"Directory not found: {metadata_dir}")
 
-    # def create_artist_table(self, df):
+        if not metadata_dir.is_dir():
+            logger.error("Path is not a directory: %s", metadata_dir)
+            raise NotADirectoryError(f"Path is not a directory: {metadata_dir}")
 
-    # def create_streaming_history_table(self, df):
+        if not metadata_file.exists():
+            logger.error("Metadata file not found: %s", metadata_file)
+            raise FileNotFoundError(f"Metadata file not found: {metadata_file}")
+        
+        try:
+            with open(metadata_file, "r", encoding="utf-8") as f:
+                metadata = json.load(f)
+        except json.JSONDecodeError as e:
+            logger.error("Failed to parse JSON file: %s", metadata_file)
+            raise ValueError(f"Failed to parse JSON file: {metadata_file}") from e
+
+        return metadata
+    
+    def create_tracks_table(self):
+        df = self.read_metadata_file()
+        return pd.json_normalize(df[self.metadata_obejct["tracks"]])
+
+    def create_albums_table(self):
+        df = self.read_metadata_file()
+        return pd.json_normalize(df[self.metadata_obejct["albums"]])
+    
+    def create_artists_table(self):
+        df = self.read_metadata_file()
+        return pd.json_normalize(df[self.metadata_obejct["artists"]])
 
     # def create_extended_streaming_history_table(self, df):
 
