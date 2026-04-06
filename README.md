@@ -1,6 +1,6 @@
 # [WIP] alans_spotify
 
-Creating a unified table containing Spotify streamed data
+Creating a unified table containing Spotify streamed data. Update master data by merging new data to master table every processing.
 
 ## Input
 - metadata
@@ -15,8 +15,10 @@ Once processed, the data will be moved to processed dir
 
 ## Output
 - output
+    - master_table.csv
+        - The master data
     - {time}
-        - Contains transformed and enriched tables
+        - Contains transformed and enriched tables by times of processing
 - processed
     - {time}
         - Contains untransformed and unenriched tables   
