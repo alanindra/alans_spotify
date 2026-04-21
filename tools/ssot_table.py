@@ -1,18 +1,17 @@
 import pandas as pd
 import logging
 import json
-from queries import query
+from tools.queries import query
 from pandasql import sqldf
 from config import path, file_names, metadata_object
 
 logger = logging.getLogger(__name__)
 
 class SsotTable:
-    def __init__(self, df=None):
+    def __init__(self):
         self.path = path
         self.file_names = file_names
         self.metadata_obejct = metadata_object
-        self.df = df
 
     def psql(self, query, env):
         return sqldf(query, env)
@@ -134,3 +133,19 @@ class SsotTable:
         extended_stream_table + music attr data
         """ 
         # extended_stream_table = self.create_extended_stream_table()
+
+# TODO #2:
+# create pipeline class 
+
+class Pipeline:
+    def __init__(self):
+        self.path = path
+
+    def update_table(self, df):
+        try:
+            master_table = pd.read_csv(self.path["master_table"])
+        except FileNotFoundError:
+            logger.error("Failed to update table: master_table.csv not found")
+        except Exception as e:
+            logger.error(f"Unexpected error {e}")
+        
