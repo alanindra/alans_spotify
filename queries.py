@@ -10,8 +10,8 @@ query = {
             , artistName artist_name
             , trackName track_name
             , msPlayed ms_played
-            , msPlayed / 1000 as sec_played
-            , msPlayed / 60000 as min_played
+            , msPlayed / 1000.0 as sec_played
+            , msPlayed / 60000.0 as min_played
         from 
             {config.df_table_name_mapping["stream"]}
         where msPlayed <> 0
@@ -24,8 +24,8 @@ query = {
             , STRFTIME('%H:%M', ts, '{config.utc_timezone}') AS time_hm
             , STRFTIME('%H', ts, '{config.utc_timezone}') AS time_h
             , ms_played
-            , ms_played / 1000 as sec_played
-            , ms_played / 60000 as min_played
+            , ms_played / 1000.0 as sec_played
+            , ms_played / 60000.0 as min_played
             , platform
             , conn_country
             , master_metadata_track_name
