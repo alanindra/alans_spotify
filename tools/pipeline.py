@@ -7,7 +7,7 @@ from config import path, file_names, metadata_object
 
 logger = logging.getLogger(__name__)
 
-class SsotTable:
+class Pipeline:
     def __init__(self):
         self.path = path
         self.file_names = file_names
@@ -134,18 +134,17 @@ class SsotTable:
         """ 
         # extended_stream_table = self.create_extended_stream_table()
 
-# TODO #2:
-# create pipeline class 
-
-class Pipeline:
-    def __init__(self):
-        self.path = path
-
     def update_table(self, df):
         try:
-            master_table = pd.read_csv(self.path["master_table"])
+            master_table = pd.read_csv(self.path["master_table"]) # old table
         except FileNotFoundError:
             logger.error("Failed to update table: master_table.csv not found")
         except Exception as e:
             logger.error(f"Unexpected error {e}")
+        
+        updated_table = pd.concat([master_table, df],ignore_index=True).drop_duplicates
+
+        return updated_table
+    
+
         
