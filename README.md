@@ -1,6 +1,8 @@
 # Spotify Extended Data Pipeline
 
-Create master data for your Spotify extended stream history and update it every time you retrieved your latest Spotify extended stream history.
+Create master table for your Spotify extended stream data and update it every time you retrieved your latest Spotify extended stream data, so you can explore your streaming history without having to wait for the end of year :)
+
+## Getting started
 
 - input
     - metadata
