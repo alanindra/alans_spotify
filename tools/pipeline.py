@@ -5,6 +5,7 @@ from tools import query, config, queries
 from pandasql import sqldf
 from pathlib import Path
 from datetime import date
+import shutil
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class Pipeline:
         self.file_names = config.file_names
         self.query = queries.query
         self._output_folder = None
-        self._processed_folder = self._create_processed_folder()
+        self._processed_folder = None
 
     def psql(self, query, env):
         return sqldf(query, env)
@@ -58,6 +59,11 @@ class Pipeline:
         if self._output_folder is None:
             self._output_folder = self._create_output_folder()
         return self._output_folder
+    
+    def _get_processed_folder(self):
+        if self._processed_folder is None:
+            self._processed_folder = self._create_processed_folder()
+        return self._processed_folder
 
     def _save_to_output(self, df, name):
         path = self._get_output_folder / f"{name}.csv"
@@ -74,8 +80,21 @@ class Pipeline:
                 return path_counter
             counter += 1
 
-    # def move_to_processed_dir(df):
-    
+    def move_to_processed_dir(self):
+        input_path = self.path['input']
+        processed_path = self._get_processed_folder()
+        
+        for folder in input_path.iterdir():
+            if not folder.is_dir():
+                continue
+            destination = processed_path / folder.name
+            counter = 2
+            while destination.exists():
+                destination = processed_path / f"{folder.name}_{counter}"
+                counter += 1
+            
+            shutil.move(str(folder), str(destination))
+
     def create_stream_table(self):
         stream_history_dir = self.path["stream_history"]
 
@@ -221,6 +240,6 @@ class Pipeline:
         
         new_table = self.create_extended_stream_table() # new table
 
-        updated_table = pd.concat([master_table, new_table],ignore_index=True).drop_duplicates() # concat tables
+        updated_table = pd.concat([master_table, new_table],ignore_index=True).drop_duplicates()
         updated_table.to_csv(self.path["master_table"])
         return updated_table

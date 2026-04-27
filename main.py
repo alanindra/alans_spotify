@@ -20,3 +20,4 @@ def run_pipeline():
 if __name__ == "__main__":
     run_pipeline()
     # enrich_table()
+    pipeline.move_to_processed_dir()
