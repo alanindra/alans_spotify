@@ -203,13 +203,13 @@ class Pipeline:
         return extended_stream_table
 
     # TODO #1
-    # def create_ssot_table(self, df):
+    # def enrich_table(self, df):
         """
         extended_stream_table + music attr data
-        """ 
+        """
         # extended_stream_table = self.create_extended_stream_table()
 
-    def update_master_table(self, df):
+    def update_master_table(self):
         try:
             master_table = pd.read_csv(self.path["master_table"]) # old table
         except FileNotFoundError:
@@ -219,6 +219,8 @@ class Pipeline:
             logger.error(f"Unexpected error {e}")
             return None
         
-        updated_table = pd.concat([master_table, df],ignore_index=True).drop_duplicates()
+        new_table = self.create_extended_stream_table() # new table
+
+        updated_table = pd.concat([master_table, new_table],ignore_index=True).drop_duplicates() # concat tables
         updated_table.to_csv(self.path["master_table"])
         return updated_table

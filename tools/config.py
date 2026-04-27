@@ -32,3 +32,6 @@ metadata_obejct = {
     "albums": "albums",
     "artists": "artists"
 }
+features = {
+    "table_enrichment":"false"
+}
