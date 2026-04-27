@@ -1,6 +1,6 @@
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 utc_timezone = "+7 hours"
 df_table_name_mapping = {
