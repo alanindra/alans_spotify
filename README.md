@@ -35,7 +35,3 @@ Once processed, the data will be moved to processed dir
 
 - logs
     - must contain table name, update time (upstream for metadata)
-
-- dashboard
-    - dashboard.ipynb
-        - The dashboard. May make some for different themes
