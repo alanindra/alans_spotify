@@ -8,9 +8,11 @@ df_table_name_mapping = {
     "extended_video_stream": "extended_video_stream_table",
     "extended_stream": "extended_stream_table",
     "stream": "stream_table",
+    "extended_stream": "extended_stream_table",
     "tracks": "tracks_table",
     "albums": "albums_table",
     "artists": "artist_table",
+    "transformation_history": "transformation_history"
 }
 path = {
     "input": BASE_DIR / "input",
@@ -20,7 +22,20 @@ path = {
     "output": BASE_DIR / "output",
     "processed": BASE_DIR / "processed",
     "logs": BASE_DIR / "logs",
-    "master_table": BASE_DIR / "output" / "master_table.csv"
+    "raw_tables": BASE_DIR / "output" / "raw_tables",
+    "master_tables": BASE_DIR / "output" / "master_tables",
+
+    "raw_extended_stream_table": BASE_DIR / "output" / "raw_tables" / (df_table_name_mapping['extended_stream'] + ".csv"),
+    "raw_tracks_table": BASE_DIR / "output" / "raw_tables" / (df_table_name_mapping['tracks'] + ".csv"),
+    "raw_albums_table": BASE_DIR / "output" / "raw_tables" / (df_table_name_mapping['albums'] + ".csv"),
+    "raw_artists_table": BASE_DIR / "output" / "raw_tables" / (df_table_name_mapping['artists'] + ".csv"),
+
+    "master_extended_stream_table": BASE_DIR / "output" / "master_tables" / (df_table_name_mapping['extended_stream'] + ".csv"),
+    "master_tracks_table": BASE_DIR / "output" / "master_tables" / (df_table_name_mapping['tracks'] + ".csv"),
+    "master_albums_table": BASE_DIR / "output" / "master_tables" / (df_table_name_mapping['albums'] + ".csv"),
+    "master_artists_table": BASE_DIR / "output" / "master_tables" / (df_table_name_mapping['artists'] + ".csv"),
+
+    "transformation_history_table": BASE_DIR / "output" / "transformation_history" / (df_table_name_mapping['transformation_history'] + ".csv")
 }
 file_names = {
     "stream": "StreamingHistory_music*",

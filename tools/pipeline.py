@@ -2,10 +2,10 @@ import pandas as pd
 import logging
 import json
 from tools import queries, config, queries
-from pandasql import sqldf
 from pathlib import Path
 from datetime import date
 import shutil
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -15,28 +15,7 @@ class Pipeline:
         self.table_name = config.df_table_name_mapping
         self.file_names = config.file_names
         self.query = queries.query
-        self._output_folder = None
         self._processed_folder = None
-
-    def psql(self, query, env):
-        return sqldf(query, env)
-    
-    def _create_output_folder(self):
-        output_path = Path(self.path['output'])
-        date_today = date.today().isoformat()
-
-        path = output_path / date_today
-        if not path.exists():
-            path.mkdir(parents=True, exist_ok=False)
-            return path 
-        
-        counter = 2  
-        while True:
-            path_counter = output_path / f"{date_today}_{counter}"
-            if not path_counter.exists():
-                path_counter.mkdir(parents=True, exist_ok=False)
-                return path_counter
-            counter += 1
 
     def _create_processed_folder(self):
         processed_path = Path(self.path['processed'])
@@ -55,31 +34,15 @@ class Pipeline:
                 return path_counter
             counter += 1
     
-    def _get_output_folder(self):
-        if self._output_folder is None:
-            self._output_folder = self._create_output_folder()
-        return self._output_folder
-    
     def _get_processed_folder(self):
         if self._processed_folder is None:
             self._processed_folder = self._create_processed_folder()
         return self._processed_folder
 
-    def _save_to_output(self, df, name):
-        path_output = self._get_output_folder()
+    def _save_to_raw_tables_folder(self, df, name):
+        path_output = self.path['raw_tables']
         path = path_output / f"{name}.csv"
-
-        if not path.exists():
-            df.to_csv(path, index=False)
-            return path
-
-        counter = 2
-        while True:
-            path_counter = self._output_folder / f"{name}_{counter}.csv"
-            if not path_counter.exists():
-                df.to_csv(path_counter, index=False)
-                return path_counter
-            counter += 1
+        df.to_csv(path, index=False)
 
     def move_to_processed_dir(self):
         input_path = self.path['input']
@@ -132,7 +95,7 @@ class Pipeline:
         stream_table = pd.concat(stream_table, ignore_index=True)
         stream_table = self.psql(self.query["stream_table"], {"stream_table":stream_table})
         
-        self._save_to_output(stream_table)
+        self._save_to_raw_tables_folder(stream_table)
 
         return stream_table
     
@@ -163,23 +126,53 @@ class Pipeline:
     
     def create_tracks_table(self):
         df = self.read_metadata_file()
-        df = pd.json_normalize(df["tracks"])
-        self._save_to_output(df, self.table_name['tracks'])
-        return df
+        tracks_table = pd.json_normalize(df["tracks"])
+
+        raw_tracks_table_path = self.path['raw_tracks_table']
+
+        if raw_tracks_table_path.exists():
+            raw_tracks_table = pd.read_csv(self.path['raw_tracks_table'])
+            updated_tracks_table = pd.concat(
+                [tracks_table, raw_tracks_table], 
+                ignore_index=True
+            ).drop_duplicates()
+            self._save_to_raw_tables_folder(updated_tracks_table, self.table_name['albums'])
+
+        self._save_to_raw_tables_folder(tracks_table, self.table_name['tracks'])
 
     def create_albums_table(self):
         df = self.read_metadata_file()
-        df = pd.json_normalize(df["albums"])
-        self._save_to_output(df, self.table_name['albums'])
-        return df
+        albums_table = pd.json_normalize(df["albums"])
+
+        raw_albums_table_path = self.path['raw_albums_table']
+        
+        if raw_albums_table_path.exists():
+            raw_albums_table = pd.read_csv(self.path['raw_albums_table'])
+            updated_albums_table = pd.concat(
+                [albums_table, raw_albums_table], 
+                ignore_index=True
+            ).drop_duplicates()
+            self._save_to_raw_tables_folder(updated_albums_table, self.table_name['albums'])
+
+        self._save_to_raw_tables_folder(albums_table, self.table_name['albums'])
     
     def create_artists_table(self):
         df = self.read_metadata_file()
-        df = pd.json_normalize(df["artists"])
-        self._save_to_output(df, self.table_name['artists'])        
-        return df
+        artists_table = pd.json_normalize(df["artists"])
 
-    def create_extended_stream_table(self, is_master_table=False):
+        raw_artist_table_path = self.path['raw_artists_table']
+        
+        if raw_artist_table_path.exists():
+            raw_artists_table = pd.read_csv(self.path['raw_artists_table'])
+            updated_artists_table = pd.concat(
+                [artists_table, raw_artists_table], 
+                ignore_index=True
+            ).drop_duplicates()
+            self._save_to_raw_tables_folder(updated_artists_table, self.table_name['albums'])
+
+        self._save_to_raw_tables_folder(artists_table, self.table_name['artists'])        
+
+    def create_extended_stream_table(self):
         extended_stream_history_dir = self.path["extended_stream_history"]
 
         if not extended_stream_history_dir.exists():
@@ -211,16 +204,19 @@ class Pipeline:
             except ValueError as e:
                 logger.error("Failed to read JSON file: %s", file)
                 raise ValueError(f"Failed to read JSON file: {file}") from e
-
+    
         extended_stream_table = pd.concat(extended_stream_table, ignore_index=True)
-        extended_stream_table = self.psql(self.query["extended_stream_table"], {"extended_stream_table":extended_stream_table})
+        raw_extended_stream_table_path = self.path["raw_extended_stream_table"]
         
-        if is_master_table is True:
-            extended_stream_table.to_csv(self.path['master_table'])
-        else: 
-            self._save_to_output(extended_stream_table, self.table_name['extended_stream'])
-        
-        return extended_stream_table
+        if raw_extended_stream_table_path.exists():
+            raw_extended_stream_table = pd.read_csv(self.path["raw_extended_stream_table"])
+            updated_extended_stream_table = pd.concat(
+                [extended_stream_table, raw_extended_stream_table], 
+                ignore_index=True
+            ).drop_duplicates()
+            self._save_to_raw_tables_folder(updated_extended_stream_table, self.table_name['extended_stream'])
+
+        self._save_to_raw_tables_folder(extended_stream_table, self.table_name['extended_stream'])
 
     # TODO #1
     # def enrich_table(self, df):
@@ -228,20 +224,3 @@ class Pipeline:
         extended_stream_table + music attr data
         """
         # extended_stream_table = self.create_extended_stream_table()
-
-    def update_master_table(self):
-        try:
-            master_table = pd.read_csv(self.path["master_table"], low_memory=False) # old table
-        except FileNotFoundError:
-            logger.error("Failed to update table: master_table.csv not found")
-            return None
-        except Exception as e:
-            logger.error(f"Unexpected error {e}")
-            return None
-        
-        new_table = self.create_extended_stream_table() # new table
-
-        updated_table = pd.concat([master_table, new_table],ignore_index=True).drop_duplicates()
-        updated_table.to_csv(self.path["master_table"])
-        self._save_to_output(updated_table, self.table_name['extended_stream'])
-        return updated_table
