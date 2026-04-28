@@ -1,0 +1,17 @@
+table_name: extended_stream_table
+cols:
+  master_metadata_track_name:
+    type: STRING
+  master_metadata_album_artist_name:
+    type: STRING
+  master_metadata_album_album_name:
+    type: STRING
+  count_skipped:
+    type: INTEGER
+  count_unskipped:
+    type: INTEGER
+  count_total:
+    type: INTEGER
+  skip_rate:
+    type: FLOAT
+    format: RATIO

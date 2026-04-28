@@ -1,5 +1,4 @@
 table_name: extended_stream_table
-source_table: raw_extended_stream_table
 cols:
   timestamp:
     type: TIMESTAMP
