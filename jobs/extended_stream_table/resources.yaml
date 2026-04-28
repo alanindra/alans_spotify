@@ -1,0 +1,66 @@
+table_name: extended_stream_table
+source_table: raw_extended_stream_table
+cols:
+  timestamp:
+    type: TIMESTAMP
+  date:
+    type: DATE
+    format: YYYY-MM-DD
+  time_hm:
+    type: TIME
+    format: HH:MM
+  time_h:
+    type: INTEGER
+    format: HH
+  ms_played:
+    type: INTEGER
+  sec_played:
+    type: FLOAT
+  min_played:
+    type: FLOAT
+  platform:
+    type: STRING
+  conn_country:
+    type: STRING
+  master_metadata_track_name:
+    type: STRING
+  master_metadata_album_artist_name:
+    type: STRING
+  master_metadata_album_album_name:
+    type: STRING
+  spotify_track_uri:
+    type: STRING
+  episode_name:
+    type: STRING
+  episode_show_name:
+    type: STRING
+  spotify_episode_uri:
+    type: STRING
+  audiobook_title:
+    type: STRING
+  audiobook_uri:
+    type: STRING
+  audiobook_chapter_uri:
+    type: STRING
+  audiobook_chapter_title:
+    type: STRING
+  reason_start:
+    type: STRING
+  reason_end:
+    type: STRING
+  shuffle:
+    type: BOOLEAN
+  skipped:
+    type: BOOLEAN
+  offline:
+    type: BOOLEAN
+  offline_timestamp:
+    type: TIMESTAMP
+  offline_time_hm:
+    type: TIME
+    format: HH:MM
+  offline_time_h:
+    type: INTEGER
+    format: HH
+  incognito_mode:
+    type: BOOLEAN
